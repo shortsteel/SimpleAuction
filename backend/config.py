@@ -10,7 +10,8 @@ class Config:
     JWT_HEADER_NAME = 'Authorization'  # 请求头名称
     JWT_HEADER_TYPE = 'Bearer'  # token类型
     JWT_ALGORITHM = 'HS256'  # 使用HS256算法
-    DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'auction.db')
+    # 支持 Docker 环境的数据库路径
+    DATABASE_PATH = os.environ.get('DATABASE_PATH') or os.path.join(os.path.dirname(__file__), 'auction.db')
     UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
 

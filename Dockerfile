@@ -6,6 +6,9 @@ WORKDIR /app/frontend
 # 复制前端依赖文件
 COPY frontend/package*.json ./
 
+# 使用国内 npm 镜像源加速
+RUN npm config set registry https://registry.npmmirror.com
+
 # 安装前端依赖
 RUN npm install
 
@@ -20,6 +23,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# 使用阿里云镜像源加速 apt-get
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
+
 # 安装系统依赖（包括 nginx）
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -30,8 +37,9 @@ RUN apt-get update && \
 # 复制后端依赖文件
 COPY backend/requirements.txt ./
 
-# 安装 Python 依赖
-RUN pip install --no-cache-dir -r requirements.txt
+# 使用阿里云 PyPI 镜像源加速并安装 Python 依赖
+RUN pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ --upgrade pip && \
+    pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt
 
 # 复制后端代码
 COPY backend/ ./backend/
@@ -89,8 +97,10 @@ stderr_logfile=/app/logs/backend.log\n\
 stdout_logfile=/app/logs/backend.log\n\
 environment=PYTHONUNBUFFERED=1\n' > /etc/supervisor/conf.d/supervisord.conf
 
-# 创建日志目录
-RUN mkdir -p /app/logs
+# 创建必要的目录
+RUN mkdir -p /app/logs && \
+    mkdir -p /app/data/database && \
+    mkdir -p /app/backend/uploads
 
 # 暴露端口
 EXPOSE 80
