@@ -22,10 +22,7 @@
           <div class="user-info">
             <el-dropdown v-if="isAuthenticated" @command="handleCommand">
               <span class="user-dropdown">
-                <el-avatar :size="32" :style="{ backgroundColor: '#667eea' }">
-                  {{ userInfo?.username?.charAt(0).toUpperCase() }}
-                </el-avatar>
-                <span class="username">{{ userInfo?.username }}</span>
+                <span class="username">{{ userInfo?.username || '请登录' }}</span>
                 <el-icon><ArrowDown /></el-icon>
               </span>
               <template #dropdown>
@@ -34,7 +31,10 @@
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
-            <el-button v-else @click="$router.push('/login')" type="primary">登录</el-button>
+            <div v-else class="auth-buttons">
+              <el-button @click="$router.push('/login')" type="primary">登录</el-button>
+              <el-button @click="$router.push('/register')">注册</el-button>
+            </div>
           </div>
         </div>
       </el-header>
@@ -61,8 +61,9 @@ export default {
     const route = useRoute()
     const store = useStore()
 
-    const isAuthenticated = computed(() => store.isAuthenticated)
-    const userInfo = computed(() => store.userInfo)
+    // store.isAuthenticated 本身已经是 computed，直接使用即可
+    const isAuthenticated = store.isAuthenticated
+    const userInfo = store.userInfo
 
     const activeMenu = computed(() => route.path)
 
@@ -129,6 +130,8 @@ export default {
 }
 
 .header-menu {
+  width: 100%;
+  justify-content: center;
   border-bottom: none;
 }
 
@@ -154,6 +157,12 @@ export default {
   margin: 0 8px;
   font-size: 14px;
   color: #333;
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .el-main {
