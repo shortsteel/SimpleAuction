@@ -34,7 +34,7 @@
                     <el-tag :type="getStatusType(auction.status)" size="small">
                       {{ getStatusText(auction.status) }}
                     </el-tag>
-                    <span class="time-left" v-if="auction.status === 'active'">
+                    <span class="time-left" v-if="auction.status === 'active'">剩余时间：
                       {{ formatTimeLeft(auction.time_left) }}
                     </span>
                   </div>

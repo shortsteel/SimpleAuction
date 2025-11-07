@@ -47,15 +47,21 @@
                   <span class="seller-label">发布者：</span>
                   <span class="seller-name">{{ auction.seller_username || '未知' }}</span>
                 </div>
-                <div class="auction-price">
-                  <span class="price-label">当前价：</span>
-                  <span class="price">¥{{ auction.current_price.toFixed(2) }}</span>
+                <div class="auction-stats">
+                  <div class="stat-item">
+                    <span class="stat-label">当前价：</span>
+                    <span class="stat-value price">¥{{ auction.current_price.toFixed(2) }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">竞拍者：</span>
+                    <span class="stat-value">{{ auction.bidder_count }}人</span>
+                  </div>
                 </div>
                 <div class="auction-meta">
                   <el-tag :type="getStatusType(auction.status)" size="small">
                     {{ getStatusText(auction.status) }}
                   </el-tag>
-                  <span class="time-left" v-if="auction.status === 'active'">
+                  <span class="time-left" v-if="auction.status === 'active'"> 剩余时间：
                     {{ formatTimeLeft(auction.time_left) }}
                   </span>
                 </div>
@@ -317,19 +323,29 @@ export default {
   font-weight: 500;
 }
 
-.auction-price {
+.auction-stats {
   margin-bottom: 12px;
 }
 
-.price-label {
-  font-size: 12px;
-  color: #999;
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.stat-label {
+  color: #666;
+}
+
+.stat-value {
+  color: #333;
+  font-weight: 600;
 }
 
 .price {
-  font-size: 24px;
-  font-weight: 600;
   color: #667eea;
+  font-size: 18px;
 }
 
 .auction-meta {

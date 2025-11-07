@@ -83,11 +83,26 @@ def get_my_bids():
         # 判断状态
         original_status = bid['status']
         status = original_status
-        if status == 'active':
-            if time_left <= 0:
+        
+        # 如果拍卖状态是 active 但时间已过，需要检查实际状态
+        if status == 'active' and time_left <= 0:
+            # 时间已过，检查是否有出价（通过检查 current_bidder_id 或 bids 数量）
+            # 如果有出价，应该是 ended；如果没有出价，应该是 no_bid
+            # 检查是否有出价记录
+            bids_count = len(Bid.get_by_auction(bid['auction_id']))
+            if bids_count == 0:
+                status = 'no_bid'
+            else:
                 status = 'ended'
-            elif bid.get('is_highest'):
-                status = 'leading'
+        
+        # 判断用户是否是最终中标者（当拍卖结束时）
+        # 只有最高出价的那个记录才标记为中标
+        is_winner = False
+        if status == 'ended' and bid.get('current_bidder_id') == bidder_id:
+            # 拍卖已结束，且当前用户是最高出价者
+            # 只有出价金额等于当前最高价的记录才是中标记录
+            if bid['amount'] == bid['current_price']:
+                is_winner = True
         
         result.append({
             'id': bid['id'],
@@ -95,10 +110,11 @@ def get_my_bids():
             'title': bid['title'],
             'amount': bid['amount'],
             'current_price': bid['current_price'],
-            'is_highest': bid.get('is_highest', False) and original_status == 'active',
+            'is_highest': bid.get('is_highest', False) and original_status == 'active' and time_left > 0,
+            'is_winner': is_winner,  # 是否中标
             'status': status,
             'end_time': bid['end_time'],
-            'time_left': max(0, int(time_left)) if original_status == 'active' else 0,
+            'time_left': max(0, int(time_left)) if original_status == 'active' and time_left > 0 else 0,
             'created_at': bid['created_at']
         })
     

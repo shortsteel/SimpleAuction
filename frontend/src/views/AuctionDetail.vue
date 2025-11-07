@@ -37,16 +37,22 @@
 
             <el-card class="description-card">
               <h2>{{ auction.title }}</h2>
+              <p class="description">{{ auction.description }}</p>
               <div class="seller-info">
                 <span class="seller-label">发布者：</span>
                 <span class="seller-name">{{ auction.seller_username || '未知' }}</span>
               </div>
-              <p class="description">{{ auction.description }}</p>
             </el-card>
 
             <el-card class="bid-history-card">
               <template #header>
-                <h3>出价历史</h3>
+                <div class="bid-history-header">
+                  <h3>出价历史</h3>
+                  <div class="bid-stats" v-if="auction.bid_history && auction.bid_history.length > 0">
+                    <span class="stat-item">出价次数：{{ bidCount }}</span>
+                    <span class="stat-item">参与竞拍人数：{{ bidderCount }}</span>
+                  </div>
+                </div>
               </template>
               <el-table :data="auction.bid_history" style="width: 100%">
                 <el-table-column prop="amount" label="出价金额" width="150">
@@ -185,6 +191,20 @@ export default {
     const userInfo = computed(() => store.userInfo)
     const isOwner = computed(() => auction.value && userInfo.value && auction.value.seller_id === userInfo.value.id)
     const canBid = computed(() => isAuthenticated.value && !isOwner.value)
+    
+    // 计算出价次数
+    const bidCount = computed(() => {
+      if (!auction.value || !auction.value.bid_history) return 0
+      return auction.value.bid_history.length
+    })
+    
+    // 计算参与竞拍人数
+    const bidderCount = computed(() => {
+      if (!auction.value || !auction.value.bid_history || auction.value.bid_history.length === 0) return 0
+      // 统计不同的出价者数量
+      const bidders = new Set(auction.value.bid_history.map(bid => bid.bidder))
+      return bidders.size
+    })
 
     const getMinBidAmount = () => {
       if (!auction.value) return 0.01
@@ -376,6 +396,8 @@ export default {
       userInfo,
       isOwner,
       canBid,
+      bidCount,
+      bidderCount,
       handleBid,
       getStatusText,
       formatTimeLeft,
@@ -471,7 +493,6 @@ export default {
   color: #666;
   margin-bottom: 16px;
   padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
 }
 
 .seller-label {
@@ -492,11 +513,30 @@ export default {
   margin-top: 16px;
 }
 
+.bid-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .bid-history-card h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: #333;
+}
+
+.bid-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+  color: #666;
+}
+
+.stat-item {
+  white-space: nowrap;
 }
 
 .bid-amount {

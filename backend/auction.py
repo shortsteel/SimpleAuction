@@ -93,9 +93,16 @@ def get_auctions():
     
     auctions, total = Auction.get_list(page, per_page, status, order_by)
     
+    # 获取每个拍卖的竞拍者数量
+    from models import Bid
+    
     # 格式化输出
     result = []
     for auction in auctions:
+        # 计算竞拍者数量
+        bids = Bid.get_by_auction(auction['id'])
+        bidder_count = len(set(bid['bidder_id'] for bid in bids))
+        
         # 计算剩余时间
         end_time = datetime.fromisoformat(auction['end_time'].replace('Z', '+00:00'))
         now = datetime.now(end_time.tzinfo) if end_time.tzinfo else datetime.now()
@@ -112,7 +119,8 @@ def get_auctions():
             'status': auction['status'],
             'images': auction['images'][:1] if auction['images'] else [],  # 只返回第一张图片
             'time_left': max(0, int(time_left)) if auction['status'] == 'active' else 0,
-            'seller_username': auction.get('seller_username', '')
+            'seller_username': auction.get('seller_username', ''),
+            'bidder_count': bidder_count
         })
     
     return jsonify({

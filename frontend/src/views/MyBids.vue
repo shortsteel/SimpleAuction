@@ -4,7 +4,15 @@
       <h1 class="page-title">我的竞拍</h1>
       
       <el-card v-loading="loading" class="bids-card">
-        <div v-if="bids.length > 0" class="bids-list">
+        <div v-if="bids.length > 0" class="bids-header">
+          <el-radio-group v-model="viewMode" class="view-switcher">
+            <el-radio-button label="time">按时间顺序</el-radio-button>
+            <el-radio-button label="group">按拍卖标的</el-radio-button>
+          </el-radio-group>
+        </div>
+        
+        <!-- 时间顺序视图 -->
+        <div v-if="bids.length > 0 && viewMode === 'time'" class="bids-list">
           <el-table :data="bids" style="width: 100%">
             <el-table-column prop="title" label="拍卖标的" width="300">
               <template #default="scope">
@@ -31,11 +39,17 @@
                 <el-tag v-else-if="scope.row.status === 'active'" type="warning" size="small">
                   已出价
                 </el-tag>
-                <el-tag v-else-if="scope.row.status === 'ended'" type="info" size="small">
-                  已结束
+                <el-tag v-else-if="scope.row.status === 'ended' && scope.row.is_winner" type="success" size="small">
+                  已中标
                 </el-tag>
-                <el-tag v-else type="danger" size="small">
+                <el-tag v-else-if="scope.row.status === 'ended'" type="info" size="small">
+                  未中标
+                </el-tag>
+                <el-tag v-else-if="scope.row.status === 'no_bid'" type="danger" size="small">
                   已流拍
+                </el-tag>
+                <el-tag v-else type="info" size="small">
+                  已结束
                 </el-tag>
               </template>
             </el-table-column>
@@ -47,8 +61,11 @@
                 <span v-else-if="scope.row.status === 'ended'">
                   已结束
                 </span>
-                <span v-else>
+                <span v-else-if="scope.row.status === 'no_bid'">
                   已流拍
+                </span>
+                <span v-else>
+                  已结束
                 </span>
               </template>
             </el-table-column>
@@ -70,14 +87,91 @@
             </el-table-column>
           </el-table>
         </div>
-        <el-empty v-else description="您还没有参与任何竞拍"></el-empty>
+        
+        <!-- 分组视图 -->
+        <div v-if="bids.length > 0 && viewMode === 'group'" class="grouped-bids">
+          <div v-for="group in groupedBids" :key="group.auction_id" class="auction-group">
+            <div class="group-header" @click="goToDetail(group.auction_id)">
+              <div class="group-title">
+                <span class="title-text">{{ group.title }}</span>
+                <el-tag v-if="group.status === 'active'" type="success" size="small" class="status-tag">
+                  进行中
+                </el-tag>
+                <el-tag v-else-if="group.status === 'ended'" type="info" size="small" class="status-tag">
+                  已结束
+                </el-tag>
+                <el-tag v-else-if="group.status === 'no_bid'" type="danger" size="small" class="status-tag">
+                  已流拍
+                </el-tag>
+                <el-tag v-else type="info" size="small" class="status-tag">
+                  已结束
+                </el-tag>
+              </div>
+              <div class="group-info">
+                <span class="info-item">当前最高价: <strong>¥{{ group.current_price.toFixed(2) }}</strong></span>
+                <span v-if="group.status === 'active' && group.time_left > 0" class="info-item">
+                  剩余时间: {{ formatTimeLeft(group.time_left) }}
+                </span>
+              </div>
+            </div>
+            <div class="group-bids">
+              <el-table :data="group.bids" style="width: 100%">
+                <el-table-column prop="amount" label="我的出价" width="150">
+                  <template #default="scope">
+                    <span class="bid-amount">¥{{ scope.row.amount.toFixed(2) }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="is_highest" label="状态" width="120">
+                  <template #default="scope">
+                    <el-tag v-if="scope.row.is_highest && group.status === 'active'" type="success" size="small">
+                      领先中
+                    </el-tag>
+                    <el-tag v-else-if="group.status === 'active'" type="warning" size="small">
+                      已出价
+                    </el-tag>
+                    <el-tag v-else-if="group.status === 'ended' && scope.row.is_winner" type="success" size="small">
+                      已中标
+                    </el-tag>
+                    <el-tag v-else-if="group.status === 'ended'" type="info" size="small">
+                      未中标
+                    </el-tag>
+                    <el-tag v-else-if="group.status === 'no_bid'" type="danger" size="small">
+                      已流拍
+                    </el-tag>
+                    <el-tag v-else type="info" size="small">
+                      已结束
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="created_at" label="出价时间" width="180">
+                  <template #default="scope">
+                    {{ formatDateTime(scope.row.created_at) }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="120">
+                  <template #default="scope">
+                    <el-button
+                      type="primary"
+                      size="small"
+                      @click="goToDetail(group.auction_id)"
+                    >
+                      查看详情
+                    </el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+        </div>
+        
+        <el-empty v-if="bids.length === 0" description="您还没有参与任何竞拍"></el-empty>
       </el-card>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api'
 import { ElMessage } from 'element-plus'
@@ -88,6 +182,7 @@ export default {
     const router = useRouter()
     const loading = ref(false)
     const bids = ref([])
+    const viewMode = ref('time')
 
     const loadBids = async () => {
       loading.value = true
@@ -119,6 +214,42 @@ export default {
       return new Date(dateTime).toLocaleString('zh-CN')
     }
 
+    // 按拍卖标的分组
+    const groupedBids = computed(() => {
+      const groups = {}
+      
+      bids.value.forEach(bid => {
+        const key = bid.auction_id
+        if (!groups[key]) {
+          groups[key] = {
+            auction_id: bid.auction_id,
+            title: bid.title,
+            status: bid.status,
+            current_price: bid.current_price,
+            time_left: bid.time_left,
+            bids: []
+          }
+        }
+        groups[key].bids.push(bid)
+      })
+      
+      // 将对象转换为数组，并按每个组的最新出价时间排序
+      return Object.values(groups).map(group => {
+        // 对每个组内的出价按时间降序、金额降序排序
+        group.bids.sort((a, b) => {
+          const timeDiff = new Date(b.created_at) - new Date(a.created_at)
+          if (timeDiff !== 0) return timeDiff
+          return b.amount - a.amount
+        })
+        return group
+      }).sort((a, b) => {
+        // 按组内最新出价时间降序排序
+        const aLatest = new Date(a.bids[0].created_at)
+        const bLatest = new Date(b.bids[0].created_at)
+        return bLatest - aLatest
+      })
+    })
+
     onMounted(() => {
       loadBids()
     })
@@ -126,6 +257,8 @@ export default {
     return {
       loading,
       bids,
+      viewMode,
+      groupedBids,
       loadBids,
       goToDetail,
       formatTimeLeft,
@@ -186,6 +319,75 @@ export default {
   font-size: 16px;
   font-weight: 600;
   color: #333;
+}
+
+.bids-header {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.view-switcher {
+  margin-bottom: 0;
+}
+
+.grouped-bids {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auction-group {
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.group-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.group-header:hover {
+  opacity: 0.9;
+}
+
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.group-title .title-text {
+  font-size: 18px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.status-tag {
+  margin-left: auto;
+}
+
+.group-info {
+  display: flex;
+  gap: 24px;
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+}
+
+.group-bids {
+  background: white;
+  padding: 0;
 }
 </style>
 

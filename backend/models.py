@@ -237,7 +237,7 @@ class Bid:
             FROM bids b
             JOIN users u ON b.bidder_id = u.id
             WHERE b.auction_id = ?
-            ORDER BY b.created_at DESC
+            ORDER BY b.created_at DESC, b.amount DESC
         ''', (auction_id,))
         rows = cursor.fetchall()
         bids = [dict(row) for row in rows]
@@ -254,7 +254,7 @@ class Bid:
             FROM bids b
             JOIN auctions a ON b.auction_id = a.id
             WHERE b.bidder_id = ?
-            ORDER BY b.created_at DESC
+            ORDER BY b.created_at DESC, b.amount DESC
         ''', (bidder_id,))
         rows = cursor.fetchall()
         bids = []
