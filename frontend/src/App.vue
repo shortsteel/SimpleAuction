@@ -105,6 +105,12 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 0;
   height: 64px !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100%;
 }
 
 .header-content {
@@ -168,6 +174,7 @@ export default {
 .el-main {
   padding: 24px;
   min-height: calc(100vh - 64px);
+  margin-top: 64px;
 }
 </style>
 
