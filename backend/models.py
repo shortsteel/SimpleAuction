@@ -61,7 +61,7 @@ class User:
 
 class Auction:
     @staticmethod
-    def create(title, description, starting_price, end_time, seller_id, images=None):
+    def create(title, description, starting_price, end_time, seller_id, images=None, min_increment=0.01):
         """创建拍卖标的"""
         conn = get_db()
         cursor = conn.cursor()
@@ -69,9 +69,9 @@ class Auction:
         try:
             cursor.execute('''
                 INSERT INTO auctions (title, description, starting_price, current_price, 
-                                   seller_id, end_time, images)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (title, description, starting_price, starting_price, seller_id, end_time, images_json))
+                                   seller_id, end_time, images, min_increment)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (title, description, starting_price, starting_price, seller_id, end_time, images_json, min_increment))
             conn.commit()
             auction_id = cursor.lastrowid
             return Auction.get_by_id(auction_id)
@@ -83,7 +83,12 @@ class Auction:
         """根据ID获取拍卖标的"""
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM auctions WHERE id = ?', (auction_id,))
+        cursor.execute('''
+            SELECT a.*, u.username as seller_username 
+            FROM auctions a
+            JOIN users u ON a.seller_id = u.id
+            WHERE a.id = ?
+        ''', (auction_id,))
         row = cursor.fetchone()
         conn.close()
         if row:
@@ -98,17 +103,22 @@ class Auction:
         conn = get_db()
         cursor = conn.cursor()
         
-        query = 'SELECT * FROM auctions WHERE 1=1'
+        query = '''
+            SELECT a.*, u.username as seller_username 
+            FROM auctions a
+            JOIN users u ON a.seller_id = u.id
+            WHERE 1=1
+        '''
         params = []
         
         if status:
-            query += ' AND status = ?'
+            query += ' AND a.status = ?'
             params.append(status)
         
         if order_by == 'created_at':
-            query += ' ORDER BY created_at DESC'
+            query += ' ORDER BY a.created_at DESC'
         elif order_by == 'end_time':
-            query += ' ORDER BY end_time ASC'
+            query += ' ORDER BY a.end_time ASC'
         
         query += ' LIMIT ? OFFSET ?'
         params.extend([per_page, (page - 1) * per_page])

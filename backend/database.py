@@ -33,6 +33,7 @@ def init_db():
             description TEXT NOT NULL,
             starting_price REAL NOT NULL,
             current_price REAL NOT NULL,
+            min_increment REAL DEFAULT 0.01,
             current_bidder_id INTEGER,
             seller_id INTEGER NOT NULL,
             end_time TIMESTAMP NOT NULL,
@@ -44,6 +45,13 @@ def init_db():
             FOREIGN KEY (current_bidder_id) REFERENCES users(id)
         )
     ''')
+    
+    # 为现有表添加 min_increment 字段（如果不存在）
+    try:
+        cursor.execute('ALTER TABLE auctions ADD COLUMN min_increment REAL DEFAULT 0.01')
+    except sqlite3.OperationalError:
+        # 字段已存在，忽略错误
+        pass
     
     # 创建出价记录表
     cursor.execute('''

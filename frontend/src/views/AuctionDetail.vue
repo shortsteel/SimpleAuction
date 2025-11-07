@@ -37,6 +37,10 @@
 
             <el-card class="description-card">
               <h2>{{ auction.title }}</h2>
+              <div class="seller-info">
+                <span class="seller-label">发布者：</span>
+                <span class="seller-name">{{ auction.seller_username || '未知' }}</span>
+              </div>
               <p class="description">{{ auction.description }}</p>
             </el-card>
 
@@ -69,6 +73,10 @@
                   <span class="price-label">当前最高价</span>
                   <span class="price-value">¥{{ auction.current_price.toFixed(2) }}</span>
                 </div>
+                <div class="price-item">
+                  <span class="price-label">最低加价幅度</span>
+                  <span class="price-value">¥{{ (auction.min_increment || 0.01).toFixed(2) }}</span>
+                </div>
                 <div v-if="auction.current_bidder" class="bidder-info">
                   <span class="bidder-label">当前最高出价者：</span>
                   <span class="bidder-name">{{ auction.current_bidder.username }}</span>
@@ -98,14 +106,14 @@
                   <el-form-item prop="amount">
                     <el-input-number
                       v-model="bidForm.amount"
-                      :min="auction.current_price + 0.01"
+                      :min="getMinBidAmount()"
                       :precision="2"
-                      :step="1"
+                      :step="auction.min_increment || 0.01"
                       placeholder="请输入出价金额"
                       style="width: 100%"
                       size="large"
                     />
-                    <p class="hint">最低出价：¥{{ (auction.current_price + 0.01).toFixed(2) }}</p>
+                    <p class="hint">最低出价：¥{{ getMinBidAmount().toFixed(2) }}（当前最高价 + 最低加价幅度）</p>
                   </el-form-item>
                   <el-form-item>
                     <el-button
@@ -171,34 +179,112 @@ export default {
     })
     const bidFormRef = ref(null)
     let timer = null
+    let refreshTimer = null
 
     const isAuthenticated = computed(() => store.isAuthenticated)
     const userInfo = computed(() => store.userInfo)
     const isOwner = computed(() => auction.value && userInfo.value && auction.value.seller_id === userInfo.value.id)
     const canBid = computed(() => isAuthenticated.value && !isOwner.value)
 
+    const getMinBidAmount = () => {
+      if (!auction.value) return 0.01
+      const minIncrement = auction.value.min_increment || 0.01
+      return auction.value.current_price + minIncrement
+    }
+
     const bidRules = {
       amount: [
-        { required: true, message: '请输入出价金额', trigger: 'blur' }
+        { required: true, message: '请输入出价金额', trigger: 'blur' },
+        { 
+          validator: (rule, value, callback) => {
+            if (!value) {
+              callback(new Error('请输入出价金额'))
+              return
+            }
+            const minAmount = getMinBidAmount()
+            if (value < minAmount) {
+              callback(new Error(`出价金额必须至少为 ${minAmount.toFixed(2)}`))
+              return
+            }
+            callback()
+          },
+          trigger: 'blur'
+        }
       ]
     }
 
-    const loadAuction = async () => {
-      loading.value = true
+    const loadAuction = async (showLoading = true) => {
+      if (showLoading) {
+        loading.value = true
+      }
       try {
         const response = await api.get(`/auctions/${route.params.id}`)
+        const oldCurrentPrice = auction.value?.current_price
+        const oldBidHistoryLength = auction.value?.bid_history?.length || 0
+        
         auction.value = response.data
         if (auction.value.images && auction.value.images.length > 0) {
           currentImage.value = auction.value.images[0]
         }
         if (canBid.value && auction.value.status === 'active') {
-          bidForm.value.amount = auction.value.current_price + 0.01
+          bidForm.value.amount = getMinBidAmount()
+        }
+        
+        // 检测是否有新的出价（静默刷新时）
+        if (!showLoading && oldCurrentPrice !== undefined) {
+          if (auction.value.current_price > oldCurrentPrice) {
+            // 有新出价，可以显示提示（可选）
+            // ElMessage.info('有新的出价！')
+          }
+          if (auction.value.bid_history.length > oldBidHistoryLength) {
+            // 出价历史有更新
+          }
+        }
+        
+        // 根据拍卖状态管理刷新定时器
+        if (auction.value.status === 'active') {
+          if (!refreshTimer) {
+            startRefreshTimer()
+          }
+        } else {
+          stopRefreshTimer()
         }
       } catch (error) {
-        ElMessage.error('加载拍卖详情失败')
-        router.push('/')
+        if (showLoading) {
+          ElMessage.error('加载拍卖详情失败')
+          router.push('/')
+        }
       } finally {
-        loading.value = false
+        if (showLoading) {
+          loading.value = false
+        }
+      }
+    }
+
+    const refreshAuction = async () => {
+      // 静默刷新，不显示loading
+      await loadAuction(false)
+    }
+
+    const startRefreshTimer = () => {
+      // 每3秒刷新一次拍卖数据
+      if (refreshTimer) {
+        clearInterval(refreshTimer)
+      }
+      refreshTimer = setInterval(() => {
+        if (auction.value && auction.value.status === 'active') {
+          refreshAuction()
+        } else {
+          // 拍卖已结束，停止刷新
+          stopRefreshTimer()
+        }
+      }, 3000)
+    }
+
+    const stopRefreshTimer = () => {
+      if (refreshTimer) {
+        clearInterval(refreshTimer)
+        refreshTimer = null
       }
     }
 
@@ -213,8 +299,8 @@ export default {
               amount: bidForm.value.amount
             })
             ElMessage.success('出价成功！')
-            await loadAuction()
-            bidForm.value.amount = auction.value.current_price + 0.01
+            await loadAuction(false) // 出价后刷新，不显示loading
+            bidForm.value.amount = getMinBidAmount()
           } catch (error) {
             ElMessage.error(error.response?.data?.error || '出价失败')
           } finally {
@@ -256,20 +342,26 @@ export default {
           } else {
             auction.value.status = 'ended'
             clearInterval(timer)
+            stopRefreshTimer()
           }
         }, 1000)
       }
     }
 
-    onMounted(() => {
-      loadAuction()
+    onMounted(async () => {
+      await loadAuction()
       updateTimer()
+      // 如果拍卖进行中，启动自动刷新
+      if (auction.value && auction.value.status === 'active') {
+        startRefreshTimer()
+      }
     })
 
     onUnmounted(() => {
       if (timer) {
         clearInterval(timer)
       }
+      stopRefreshTimer()
     })
 
     return {
@@ -287,7 +379,8 @@ export default {
       handleBid,
       getStatusText,
       formatTimeLeft,
-      formatDateTime
+      formatDateTime,
+      getMinBidAmount
     }
   }
 }
@@ -373,11 +466,30 @@ export default {
   margin-bottom: 16px;
 }
 
+.seller-info {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.seller-label {
+  color: #999;
+  margin-right: 8px;
+}
+
+.seller-name {
+  color: #333;
+  font-weight: 500;
+}
+
 .description {
   font-size: 16px;
   color: #666;
   line-height: 1.8;
   white-space: pre-wrap;
+  margin-top: 16px;
 }
 
 .bid-history-card h3 {

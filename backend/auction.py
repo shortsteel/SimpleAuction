@@ -18,6 +18,7 @@ def create_auction():
     starting_price = data.get('starting_price')
     end_time = data.get('end_time')
     images = data.get('images', [])
+    min_increment = data.get('min_increment', 0.01)
     
     # 验证输入
     if not title:
@@ -31,6 +32,9 @@ def create_auction():
     
     if not end_time:
         return jsonify({'error': '拍卖结束时间不能为空'}), 400
+    
+    if not min_increment or min_increment <= 0:
+        return jsonify({'error': '最低加价幅度必须大于0'}), 400
     
     # 验证结束时间
     try:
@@ -48,7 +52,7 @@ def create_auction():
     seller_id = int(seller_id)
     
     # 创建拍卖标的
-    auction = Auction.create(title, description, starting_price, end_time, seller_id, images)
+    auction = Auction.create(title, description, starting_price, end_time, seller_id, images, min_increment)
     
     if not auction:
         return jsonify({'error': '发布失败，请重试'}), 500
@@ -61,6 +65,7 @@ def create_auction():
             'description': auction['description'],
             'starting_price': auction['starting_price'],
             'current_price': auction['current_price'],
+            'min_increment': auction.get('min_increment', 0.01),
             'end_time': auction['end_time'],
             'status': auction['status']
         }
@@ -102,10 +107,12 @@ def get_auctions():
             'description': auction['description'][:100] + '...' if len(auction['description']) > 100 else auction['description'],
             'starting_price': auction['starting_price'],
             'current_price': auction['current_price'],
+            'min_increment': auction.get('min_increment', 0.01),
             'end_time': auction['end_time'],
             'status': auction['status'],
             'images': auction['images'][:1] if auction['images'] else [],  # 只返回第一张图片
-            'time_left': max(0, int(time_left)) if auction['status'] == 'active' else 0
+            'time_left': max(0, int(time_left)) if auction['status'] == 'active' else 0,
+            'seller_username': auction.get('seller_username', '')
         })
     
     return jsonify({
@@ -136,7 +143,7 @@ def get_auction_detail(auction_id):
         bid_history.append({
             'amount': bid['amount'],
             'created_at': bid['created_at'],
-            'bidder': bid['username'][:1] + '***' if len(bid['username']) > 1 else '***'
+            'bidder': bid['username'] if len(bid['username']) > 1 else '***'
         })
     
     # 计算剩余时间
@@ -150,7 +157,7 @@ def get_auction_detail(auction_id):
         bidder = User.get_by_id(auction['current_bidder_id'])
         if bidder:
             current_bidder = {
-                'username': bidder['username'][:1] + '***' if len(bidder['username']) > 1 else '***'
+                'username': bidder['username'] if len(bidder['username']) > 1 else '***'
             }
     
     result = {
@@ -159,13 +166,15 @@ def get_auction_detail(auction_id):
         'description': auction['description'],
         'starting_price': auction['starting_price'],
         'current_price': auction['current_price'],
+        'min_increment': auction.get('min_increment', 0.01),
         'current_bidder': current_bidder,
         'end_time': auction['end_time'],
         'status': auction['status'],
         'images': auction['images'],
         'time_left': max(0, int(time_left)) if auction['status'] == 'active' else 0,
         'bid_history': bid_history,
-        'seller_id': auction['seller_id']
+        'seller_id': auction['seller_id'],
+        'seller_username': auction.get('seller_username', '')
     }
     
     # 如果是发布者，显示完整信息

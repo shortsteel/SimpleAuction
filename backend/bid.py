@@ -40,8 +40,11 @@ def create_bid(auction_id):
     
     # 验证出价金额
     current_price = auction['current_price']
-    if amount <= current_price:
-        return jsonify({'error': f'出价金额必须大于当前最高价 {current_price}'}), 400
+    min_increment = auction.get('min_increment', 0.01)
+    min_bid_amount = current_price + min_increment
+    
+    if amount < min_bid_amount:
+        return jsonify({'error': f'出价金额必须至少为当前最高价加上最低加价幅度，即 {min_bid_amount:.2f}'}), 400
     
     # 创建出价记录
     bid = Bid.create(auction_id, bidder_id, amount)

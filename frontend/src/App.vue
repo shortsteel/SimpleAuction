@@ -4,7 +4,7 @@
       <el-header>
         <div class="header-content">
           <div class="logo">
-            <h2>🏛️ 简单拍卖系统</h2>
+            <h2>🏛️ 乐拍拍</h2>
           </div>
           <div class="nav-menu">
             <el-menu

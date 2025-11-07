@@ -43,6 +43,10 @@
               <div class="auction-info">
                 <h3 class="auction-title">{{ auction.title }}</h3>
                 <p class="auction-description">{{ auction.description }}</p>
+                <div class="auction-seller">
+                  <span class="seller-label">发布者：</span>
+                  <span class="seller-name">{{ auction.seller_username || '未知' }}</span>
+                </div>
                 <div class="auction-price">
                   <span class="price-label">当前价：</span>
                   <span class="price">¥{{ auction.current_price.toFixed(2) }}</span>
@@ -295,6 +299,22 @@ export default {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+}
+
+.auction-seller {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.seller-label {
+  color: #999;
+  margin-right: 4px;
+}
+
+.seller-name {
+  color: #333;
+  font-weight: 500;
 }
 
 .auction-price {

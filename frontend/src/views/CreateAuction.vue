@@ -39,6 +39,19 @@
             <p class="hint">起拍价必须大于0</p>
           </el-form-item>
           
+          <el-form-item label="最低加价幅度" prop="min_increment">
+            <el-input-number
+              v-model="form.min_increment"
+              :min="0.01"
+              :precision="2"
+              :step="0.01"
+              placeholder="请输入最低加价幅度"
+              size="large"
+              style="width: 100%"
+            />
+            <p class="hint">每次出价必须至少增加此金额，默认为0.01</p>
+          </el-form-item>
+          
           <el-form-item label="拍卖结束时间" prop="end_time">
             <el-date-picker
               v-model="form.end_time"
@@ -109,6 +122,7 @@ export default {
       title: '',
       description: '',
       starting_price: null,
+      min_increment: 0.01,
       end_time: '',
       images: []
     })
@@ -123,6 +137,10 @@ export default {
       starting_price: [
         { required: true, message: '请输入起拍价', trigger: 'blur' },
         { type: 'number', min: 0.01, message: '起拍价必须大于0', trigger: 'blur' }
+      ],
+      min_increment: [
+        { required: true, message: '请输入最低加价幅度', trigger: 'blur' },
+        { type: 'number', min: 0.01, message: '最低加价幅度必须大于0', trigger: 'blur' }
       ],
       end_time: [
         { required: true, message: '请选择拍卖结束时间', trigger: 'blur' }
@@ -223,6 +241,7 @@ export default {
               title: form.title,
               description: form.description,
               starting_price: form.starting_price,
+              min_increment: form.min_increment,
               end_time: form.end_time,
               images: form.images
             })
