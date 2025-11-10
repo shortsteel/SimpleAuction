@@ -16,10 +16,10 @@
               prefix-icon="User"
             />
           </el-form-item>
-          <el-form-item label="邮箱（选填）" prop="email">
+          <el-form-item label="邮箱" prop="email">
             <el-input
               v-model="form.email"
-              placeholder="请输入邮箱（选填）"
+              placeholder="请输入邮箱"
               size="large"
               prefix-icon="Message"
             />
@@ -111,9 +111,8 @@ export default {
     }
 
     const validateEmail = (rule, value, callback) => {
-      // 邮箱非必填，但如果填写了则需要验证格式
       if (!value) {
-        callback()
+        callback(new Error('请输入邮箱'))
       } else {
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
         if (!emailPattern.test(value)) {
@@ -129,6 +128,7 @@ export default {
         { required: true, message: '请输入用户名', trigger: 'blur' }
       ],
       email: [
+        { required: true, message: '请输入邮箱', trigger: 'blur' },
         { validator: validateEmail, trigger: 'blur' }
       ],
       password: [
