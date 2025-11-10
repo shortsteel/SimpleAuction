@@ -64,7 +64,16 @@
               format="YYYY-MM-DD HH:mm:ss"
               value-format="YYYY-MM-DDTHH:mm:ss"
             />
-            <p class="hint">结束时间必须至少在未来1小时后</p>
+            <div class="time-shortcuts">
+              <el-button size="small" @click="setEndTime(1)">1小时后</el-button>
+              <el-button size="small" @click="setEndTime(3)">3小时后</el-button>
+              <el-button size="small" @click="setEndTime(6)" >6小时后</el-button>
+              <el-button size="small" @click="setEndTime(12)">12小时后</el-button>
+              <el-button size="small" @click="setEndTime(24)">1天后</el-button>
+              <el-button size="small" @click="setEndTime(72)">3天后</el-button>
+              <el-button size="small" @click="setEndTime(168)">7天后</el-button>
+            </div>
+            <p class="hint">结束时间必须至少在未来1小时后，默认6小时</p>
           </el-form-item>
           
           <el-form-item label="标的图片" prop="images">
@@ -102,7 +111,7 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api'
 import { ElMessage } from 'element-plus'
@@ -125,6 +134,35 @@ export default {
       min_increment: 0.01,
       end_time: '',
       images: []
+    })
+
+    // 将Date对象格式化为本地时间字符串 YYYY-MM-DDTHH:mm:ss
+    const formatLocalDateTime = (date) => {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      const seconds = String(date.getSeconds()).padStart(2, '0')
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
+    }
+
+    // 初始化默认结束时间为6小时后
+    const initDefaultEndTime = () => {
+      const now = new Date()
+      const defaultEndTime = new Date(now.getTime() + 6 * 3600000) // 6小时后
+      form.end_time = formatLocalDateTime(defaultEndTime)
+    }
+
+    // 设置结束时间的快捷方法
+    const setEndTime = (hours) => {
+      const now = new Date()
+      const endTime = new Date(now.getTime() + hours * 3600000)
+      form.end_time = formatLocalDateTime(endTime)
+    }
+
+    onMounted(() => {
+      initDefaultEndTime()
     })
 
     const rules = {
@@ -270,6 +308,7 @@ export default {
       fileList,
       disabledDate,
       disabledTime,
+      setEndTime,
       handlePreview,
       handleRemove,
       handleChange,
@@ -312,6 +351,13 @@ export default {
   color: #999;
   margin-top: 4px;
   margin-bottom: 0;
+}
+
+.time-shortcuts {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 </style>
 

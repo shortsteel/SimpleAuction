@@ -31,22 +31,22 @@
                 <span class="current-price">¥{{ scope.row.current_price.toFixed(2) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="is_highest" label="状态" width="120">
+            <el-table-column prop="is_highest" label="状态" width="140">
               <template #default="scope">
                 <el-tag v-if="scope.row.is_highest && scope.row.status === 'active'" type="success" size="small">
-                  领先中
+                  🏆 领先中
                 </el-tag>
                 <el-tag v-else-if="scope.row.status === 'active'" type="warning" size="small">
-                  已出价
+                  💰 已出价
                 </el-tag>
                 <el-tag v-else-if="scope.row.status === 'ended' && scope.row.is_winner" type="success" size="small">
-                  已中标
+                  ✅ 已中标
                 </el-tag>
                 <el-tag v-else-if="scope.row.status === 'ended'" type="info" size="small">
                   未中标
                 </el-tag>
-                <el-tag v-else-if="scope.row.status === 'no_bid'" type="danger" size="small">
-                  已流拍
+                <el-tag v-else-if="scope.row.status === 'no_bid'" type="warning" size="small">
+                  ❌ 已流拍
                 </el-tag>
                 <el-tag v-else type="info" size="small">
                   已结束
@@ -95,13 +95,13 @@
               <div class="group-title">
                 <span class="title-text">{{ group.title }}</span>
                 <el-tag v-if="group.status === 'active'" type="success" size="small" class="status-tag">
-                  进行中
+                  🔥 进行中
                 </el-tag>
                 <el-tag v-else-if="group.status === 'ended'" type="info" size="small" class="status-tag">
-                  已结束
+                  ✅ 已结束
                 </el-tag>
-                <el-tag v-else-if="group.status === 'no_bid'" type="danger" size="small" class="status-tag">
-                  已流拍
+                <el-tag v-else-if="group.status === 'no_bid'" type="warning" size="small" class="status-tag">
+                  ❌ 已流拍
                 </el-tag>
                 <el-tag v-else type="info" size="small" class="status-tag">
                   已结束
@@ -121,22 +121,22 @@
                     <span class="bid-amount">¥{{ scope.row.amount.toFixed(2) }}</span>
                   </template>
                 </el-table-column>
-                <el-table-column prop="is_highest" label="状态" width="120">
+                <el-table-column prop="is_highest" label="状态" width="140">
                   <template #default="scope">
                     <el-tag v-if="scope.row.is_highest && group.status === 'active'" type="success" size="small">
-                      领先中
+                      🏆 领先中
                     </el-tag>
                     <el-tag v-else-if="group.status === 'active'" type="warning" size="small">
-                      已出价
+                      💰 已出价
                     </el-tag>
                     <el-tag v-else-if="group.status === 'ended' && scope.row.is_winner" type="success" size="small">
-                      已中标
+                      ✅ 已中标
                     </el-tag>
                     <el-tag v-else-if="group.status === 'ended'" type="info" size="small">
                       未中标
                     </el-tag>
-                    <el-tag v-else-if="group.status === 'no_bid'" type="danger" size="small">
-                      已流拍
+                    <el-tag v-else-if="group.status === 'no_bid'" type="warning" size="small">
+                      ❌ 已流拍
                     </el-tag>
                     <el-tag v-else type="info" size="small">
                       已结束

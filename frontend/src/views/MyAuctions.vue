@@ -34,8 +34,14 @@
                     <el-tag :type="getStatusType(auction.status)" size="small">
                       {{ getStatusText(auction.status) }}
                     </el-tag>
-                    <span class="time-left" v-if="auction.status === 'active'">剩余时间：
+                    <span class="time-left" v-if="auction.status === 'active'">
                       {{ formatTimeLeft(auction.time_left) }}
+                    </span>
+                    <span class="time-left ended" v-else-if="auction.status === 'ended'">
+                      已成交
+                    </span>
+                    <span class="time-left no-bid" v-else-if="auction.status === 'no_bid'">
+                      无人出价
                     </span>
                   </div>
                 </div>
@@ -93,9 +99,9 @@ export default {
 
     const getStatusText = (status) => {
       const texts = {
-        'active': '进行中',
-        'ended': '已结束',
-        'no_bid': '流拍'
+        'active': '🔥 进行中',
+        'ended': '✅ 已结束',
+        'no_bid': '❌ 流拍'
       }
       return texts[status] || status
     }
@@ -265,6 +271,16 @@ export default {
 .time-left {
   font-size: 12px;
   color: #999;
+}
+
+.time-left.ended {
+  color: #67c23a;
+  font-weight: 500;
+}
+
+.time-left.no-bid {
+  color: #e6a23c;
+  font-weight: 500;
 }
 </style>
 

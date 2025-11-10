@@ -92,12 +92,25 @@
               <el-divider />
 
               <div class="time-info">
-                <el-tag :type="auction.status === 'active' ? 'success' : 'info'" size="large">
+                <el-tag :type="getStatusType(auction.status)" size="large">
                   {{ getStatusText(auction.status) }}
                 </el-tag>
                 <div v-if="auction.status === 'active'" class="time-left">
                   <p>剩余时间：</p>
                   <p class="time-value">{{ formatTimeLeft(auction.time_left) }}</p>
+                </div>
+                <div v-else-if="auction.status === 'ended'" class="time-left">
+                  <p>结束时间：{{ formatDateTime(auction.end_time) }}</p>
+                  <p v-if="auction.current_bidder" class="winner-info">
+                    🎉 获胜者：<strong>{{ auction.current_bidder.username }}</strong>
+                  </p>
+                  <p v-if="auction.current_bidder" class="winner-price">
+                    成交价：<strong>¥{{ auction.current_price.toFixed(2) }}</strong>
+                  </p>
+                </div>
+                <div v-else-if="auction.status === 'no_bid'" class="time-left">
+                  <p>结束时间：{{ formatDateTime(auction.end_time) }}</p>
+                  <p class="no-bid-info">⚠️ 本拍卖因无人出价而流拍</p>
                 </div>
                 <div v-else class="time-left">
                   <p>结束时间：{{ formatDateTime(auction.end_time) }}</p>
@@ -330,11 +343,20 @@ export default {
       })
     }
 
+    const getStatusType = (status) => {
+      const types = {
+        'active': 'success',
+        'ended': 'info',
+        'no_bid': 'warning'
+      }
+      return types[status] || 'info'
+    }
+
     const getStatusText = (status) => {
       const texts = {
-        'active': '进行中',
-        'ended': '已结束',
-        'no_bid': '流拍'
+        'active': '🔥 拍卖进行中',
+        'ended': '✅ 拍卖已结束',
+        'no_bid': '❌ 流拍'
       }
       return texts[status] || status
     }
@@ -399,6 +421,7 @@ export default {
       bidCount,
       bidderCount,
       handleBid,
+      getStatusType,
       getStatusText,
       formatTimeLeft,
       formatDateTime,
@@ -612,6 +635,24 @@ export default {
   font-size: 20px;
   font-weight: 600;
   color: #667eea;
+}
+
+.winner-info,
+.winner-price {
+  margin: 8px 0;
+  color: #67c23a;
+  font-size: 15px;
+}
+
+.winner-price strong {
+  color: #667eea;
+  font-size: 18px;
+}
+
+.no-bid-info {
+  margin: 8px 0;
+  color: #e6a23c;
+  font-size: 14px;
 }
 
 .bid-section {
