@@ -8,7 +8,7 @@
       <div v-if="auction" class="detail-content">
         <el-row :gutter="24">
           <!-- 左侧：图片和基本信息 -->
-          <el-col :span="16">
+          <el-col :xs="24" :sm="24" :md="16" :lg="16">
             <el-card class="image-card">
               <div class="auction-images">
                 <el-image
@@ -68,7 +68,7 @@
           </el-col>
 
           <!-- 右侧：出价区域 -->
-          <el-col :span="8">
+          <el-col :xs="24" :sm="24" :md="8" :lg="8">
             <el-card class="bid-card">
               <div class="price-info">
                 <div class="price-item">
@@ -663,6 +663,106 @@ export default {
   font-size: 12px;
   color: #999;
   margin-top: 8px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .back-btn {
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+
+  .detail-content {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  /* 图片调整 */
+  .main-image {
+    height: 300px;
+  }
+
+  .no-image {
+    height: 300px;
+  }
+
+  .thumb-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .image-card {
+    margin-bottom: 16px;
+  }
+
+  .description-card {
+    margin-bottom: 16px;
+  }
+
+  .description-card h2 {
+    font-size: 20px;
+  }
+
+  .description {
+    font-size: 14px;
+  }
+
+  /* 出价卡片在移动端取消固定定位 */
+  .bid-card {
+    position: static;
+    margin-bottom: 16px;
+  }
+
+  /* 价格信息 */
+  .price-value {
+    font-size: 20px;
+  }
+
+  .time-value {
+    font-size: 18px;
+  }
+
+  /* 出价历史表格优化 */
+  .bid-history-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bid-stats {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  /* 简化表格在移动端的显示 */
+  .bid-history-card :deep(.el-table) {
+    font-size: 13px;
+  }
+
+  .bid-history-card :deep(.el-table th),
+  .bid-history-card :deep(.el-table td) {
+    padding: 8px 5px;
+  }
+}
+
+/* 平板适配 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .main-image {
+    height: 400px;
+  }
+
+  .no-image {
+    height: 400px;
+  }
+
+  /* 平板上出价卡片也取消固定定位 */
+  .bid-card {
+    position: static;
+  }
 }
 </style>
 

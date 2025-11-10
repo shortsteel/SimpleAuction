@@ -65,13 +65,13 @@
               value-format="YYYY-MM-DDTHH:mm:ss"
             />
             <div class="time-shortcuts">
-              <el-button size="small" @click="setEndTime(1)">1小时后</el-button>
-              <el-button size="small" @click="setEndTime(3)">3小时后</el-button>
-              <el-button size="small" @click="setEndTime(6)" >6小时后</el-button>
-              <el-button size="small" @click="setEndTime(12)">12小时后</el-button>
-              <el-button size="small" @click="setEndTime(24)">1天后</el-button>
-              <el-button size="small" @click="setEndTime(72)">3天后</el-button>
-              <el-button size="small" @click="setEndTime(168)">7天后</el-button>
+              <el-button size="small" @click="setEndTime(1)" class="time-btn">1小时后</el-button>
+              <el-button size="small" @click="setEndTime(3)" class="time-btn">3小时后</el-button>
+              <el-button size="small" @click="setEndTime(6)" class="time-btn">6小时后</el-button>
+              <el-button size="small" @click="setEndTime(12)" class="time-btn">12小时后</el-button>
+              <el-button size="small" @click="setEndTime(24)" class="time-btn">1天后</el-button>
+              <el-button size="small" @click="setEndTime(72)" class="time-btn">3天后</el-button>
+              <el-button size="small" @click="setEndTime(168)" class="time-btn">7天后</el-button>
             </div>
             <p class="hint">结束时间必须至少在未来1小时后，默认6小时</p>
           </el-form-item>
@@ -358,6 +358,65 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.time-btn {
+  flex: 0 0 auto;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+    max-width: 100%;
+  }
+
+  .page-title {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .form-card {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  /* 调整表单布局 */
+  .form-card :deep(.el-form-item__label) {
+    font-size: 14px;
+  }
+
+  /* 时间快捷按钮在移动端更紧凑 */
+  .time-shortcuts {
+    gap: 6px;
+  }
+
+  .time-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  /* 图片上传在移动端调整大小 */
+  .form-card :deep(.el-upload--picture-card) {
+    width: 80px;
+    height: 80px;
+  }
+
+  .form-card :deep(.el-upload-list--picture-card .el-upload-list__item) {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+/* 平板适配 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    max-width: 90%;
+  }
+
+  .page-title {
+    font-size: 28px;
+  }
 }
 </style>
 

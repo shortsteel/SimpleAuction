@@ -206,5 +206,24 @@ export default {
   font-size: 14px;
   color: #666;
 }
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .register-page {
+    padding: 16px;
+  }
+
+  .register-container {
+    max-width: 100%;
+  }
+
+  .register-card {
+    border-radius: 8px;
+  }
+
+  .card-header h2 {
+    font-size: 20px;
+  }
+}
 </style>
 

@@ -6,22 +6,22 @@
       <!-- 筛选和排序 -->
       <el-card class="filter-card">
         <el-row :gutter="20">
-          <el-col :span="8">
-            <el-select v-model="filters.status" placeholder="筛选状态" clearable @change="loadAuctions">
+          <el-col :xs="24" :sm="12" :md="8" class="filter-item">
+            <el-select v-model="filters.status" placeholder="筛选状态" clearable @change="loadAuctions" style="width: 100%">
               <el-option label="全部" value=""></el-option>
               <el-option label="进行中" value="active"></el-option>
               <el-option label="已结束" value="ended"></el-option>
               <el-option label="流拍" value="no_bid"></el-option>
             </el-select>
           </el-col>
-          <el-col :span="8">
-            <el-select v-model="filters.orderBy" placeholder="排序方式" @change="loadAuctions">
+          <el-col :xs="24" :sm="12" :md="8" class="filter-item">
+            <el-select v-model="filters.orderBy" placeholder="排序方式" @change="loadAuctions" style="width: 100%">
               <el-option label="最新发布" value="created_at"></el-option>
               <el-option label="即将结束" value="end_time"></el-option>
             </el-select>
           </el-col>
-          <el-col :span="8">
-            <el-button type="primary" @click="loadAuctions" :loading="loading">刷新</el-button>
+          <el-col :xs="24" :sm="24" :md="8" class="filter-item">
+            <el-button type="primary" @click="loadAuctions" :loading="loading" style="width: 100%">刷新</el-button>
           </el-col>
         </el-row>
       </el-card>
@@ -29,7 +29,7 @@
       <!-- 拍卖列表 -->
       <div v-loading="loading" class="auction-list">
         <el-row :gutter="20">
-          <el-col :span="8" v-for="auction in auctions" :key="auction.id" class="auction-item">
+          <el-col :xs="24" :sm="12" :md="8" :lg="8" v-for="auction in auctions" :key="auction.id" class="auction-item">
             <el-card class="auction-card" @click="goToDetail(auction.id)" shadow="hover">
               <div class="auction-image">
                 <img v-if="auction.images && auction.images.length > 0" 
@@ -241,6 +241,10 @@ export default {
   margin-bottom: 24px;
 }
 
+.filter-item {
+  margin-bottom: 12px;
+}
+
 .auction-list {
   min-height: 400px;
 }
@@ -379,6 +383,60 @@ export default {
   margin-top: 32px;
   display: flex;
   justify-content: center;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .filter-card {
+    margin-bottom: 16px;
+  }
+
+  .filter-item {
+    margin-bottom: 8px;
+  }
+
+  .filter-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .auction-item {
+    margin-bottom: 16px;
+  }
+
+  .auction-image {
+    height: 180px;
+  }
+
+  .auction-title {
+    font-size: 16px;
+  }
+
+  .pagination {
+    margin-top: 24px;
+    padding: 12px;
+  }
+
+  /* 简化分页显示 */
+  .pagination :deep(.el-pagination__sizes),
+  .pagination :deep(.el-pagination__jump) {
+    display: none;
+  }
+}
+
+/* 平板适配 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .auction-image {
+    height: 180px;
+  }
 }
 </style>
 

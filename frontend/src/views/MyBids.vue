@@ -14,7 +14,7 @@
         <!-- 时间顺序视图 -->
         <div v-if="bids.length > 0 && viewMode === 'time'" class="bids-list">
           <el-table :data="bids" style="width: 100%">
-            <el-table-column prop="title" label="拍卖标的" width="300">
+            <el-table-column prop="title" label="拍卖标的" width="100">
               <template #default="scope">
                 <div class="auction-title-cell" @click="goToDetail(scope.row.auction_id)">
                   <span class="title-text">{{ scope.row.title }}</span>
@@ -388,6 +388,82 @@ export default {
 .group-bids {
   background: white;
   padding: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .bids-card {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .bids-header {
+    margin-bottom: 16px;
+  }
+
+  /* 表格在移动端优化 */
+  .bids-list :deep(.el-table) {
+    font-size: 13px;
+  }
+
+  .bids-list :deep(.el-table th),
+  .bids-list :deep(.el-table td) {
+    padding: 8px 5px;
+  }
+
+  /* 隐藏部分列以适应小屏幕 */
+  .bids-list :deep(.el-table__column--selection),
+  .bids-list :deep(.el-table th:nth-child(3)),
+  .bids-list :deep(.el-table td:nth-child(3)) {
+    display: none;
+  }
+
+  /* 分组视图优化 */
+  .group-header {
+    padding: 12px 16px;
+  }
+
+  .group-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .group-title .title-text {
+    font-size: 16px;
+  }
+
+  .status-tag {
+    margin-left: 0;
+  }
+
+  .group-info {
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  /* 分组内的表格 */
+  .group-bids :deep(.el-table) {
+    font-size: 13px;
+  }
+
+  .group-bids :deep(.el-table th),
+  .group-bids :deep(.el-table td) {
+    padding: 8px 5px;
+  }
+}
+
+/* 平板适配 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .bids-list :deep(.el-table) {
+    font-size: 14px;
+  }
 }
 </style>
 

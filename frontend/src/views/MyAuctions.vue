@@ -6,7 +6,7 @@
       <el-card v-loading="loading" class="auctions-card">
         <div v-if="auctions.length > 0" class="auctions-list">
           <el-row :gutter="20">
-            <el-col :span="8" v-for="auction in auctions" :key="auction.id" class="auction-item">
+            <el-col :xs="24" :sm="12" :md="8" :lg="8" v-for="auction in auctions" :key="auction.id" class="auction-item">
               <el-card class="auction-card" @click="goToDetail(auction.id)" shadow="hover">
                 <div class="auction-image">
                   <img v-if="auction.images && auction.images.length > 0" 
@@ -281,6 +281,38 @@ export default {
 .time-left.no-bid {
   color: #e6a23c;
   font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .auctions-card {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .auction-item {
+    margin-bottom: 16px;
+  }
+
+  .auction-image {
+    height: 180px;
+  }
+
+  .auction-title {
+    font-size: 16px;
+  }
+}
+
+/* 平板适配 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .auction-image {
+    height: 180px;
+  }
 }
 </style>
 
